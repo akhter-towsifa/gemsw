@@ -121,18 +121,18 @@ process.DQMoutput = cms.OutputModule("DQMRootOutputModule",
     splitLevel = cms.untracked.int32(0)
 )
 
-#process.output = cms.OutputModule("PoolOutputModule",
-#                                  dataset = cms.untracked.PSet(
-#                                      dataTier = cms.untracked.string('RECO'),
-#                                      filterName = cms.untracked.string('')
-#                                  ),
-#                                  outputCommands=cms.untracked.vstring(
-#                                      "keep *",
-#                                      "drop FEDRawDataCollection_*_*_*"
-#                                  ),
-#                                  fileName=cms.untracked.string('output_step1.root'),
-#                                  splitLevel = cms.untracked.int32(0)
-#)
+process.output = cms.OutputModule("PoolOutputModule",
+                                  dataset = cms.untracked.PSet(
+                                      dataTier = cms.untracked.string('RECO'),
+                                      filterName = cms.untracked.string('')
+                                  ),
+                                  outputCommands=cms.untracked.vstring(
+                                      "keep *",
+                                      "drop FEDRawDataCollection_*_*_*"
+                                  ),
+                                  fileName=cms.untracked.string('output_10007a_step1.root'),
+                                  splitLevel = cms.untracked.int32(0)
+)
 #
 #process.load("DQM.Integration.config.environment_cfi")
 #process.dqmEnv.subSystemFolder = "GEM"
@@ -143,8 +143,8 @@ process.DQMoutput = cms.OutputModule("DQMRootOutputModule",
 process.unpack = cms.Path(process.muonGEMDigis)
 process.localreco = cms.Path(process.gemRecHits)
 process.reco_step = cms.Path(process.GEMTrackFinder)
-process.validation_step = cms.Path(process.TrackValidation)
-process.dqmout_step = cms.EndPath(process.DQMoutput)
+#process.validation_step = cms.Path(process.TrackValidation)
+#process.dqmout_step = cms.EndPath(process.DQMoutput)
 #process.DQM_step = cms.Path(process.DQMDAQ*process.DQMRecHit)
 #process.dqmout = cms.EndPath(process.dqmEnv + process.dqmSaver)
-#process.outpath = cms.EndPath(process.output)
+process.outpath = cms.EndPath(process.output)
