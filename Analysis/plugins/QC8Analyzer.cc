@@ -141,10 +141,19 @@ void QC8TrackValidation::analyze(const edm::Event& iEvent, const edm::EventSetup
   edm::Handle<GEMRecHitCollection> gemRecHits;
   iEvent.getByToken(gemRecHits_, gemRecHits);
 
-  std::map<GEMDetId, TrajectoryStateOnSurface> tsosMap;
+  std::map<GEMDetId, TrajectoryStateOnSurface> tsos_Map;
   for (std::vector<reco::Track>::const_iterator track = tracks->begin(); track != tracks->end(); ++track){
     data_.init();
     data_.track_chi2 = track->normalizedChi2();
+    auto traj = trajs->begin();
+    for (auto traj_measurements : traj->measurements()) {
+      auto tsos = traj_measurements.predictedState();
+      auto rechit = traj_measurements.rechit();
+      auto GEMID = GEMDetId(rechit->geographicalId());
+      tsos_Map[GEMID] = tsos;
+    }
+
+    
     tree->Fill();
   }
 
