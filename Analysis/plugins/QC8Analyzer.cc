@@ -124,3 +124,23 @@ QC8Analyzer::QC8Analyzer(const edm::ParameterSet& iConfig)
   debug = iConfig.getParameter<bool>("debug");
 }
 
+void QC8TrackValidation::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
+{
+  edm::ESHandle<GEMGeometry> GEMGeom = iSetup.getHandle(GEMGeom_);
+  const GEMGeometry* GEMGeometry_ = &*GEMGeom;
+
+  edm::Handle<vector<reco::Track>> tracks;
+  iEvent.getByToken(tracks_, tracks);
+
+  edm::Handle<vector<Trajectory>> trajs;
+  iEvent.getByToken(trajs_, trajs);
+
+  edm::Handle<GEMRecHitCollection> gemRecHits;
+  iEvent.getByToken(gemRecHits_, gemRecHits);
+
+  std::map<GEMDetId, TrajectoryStateOnSurface> tsosMap;
+  for (std::vector<reco::Track>::const_iterator track = tracks->begin(); track != tracks->end(); ++track){
+
+  }
+
+}
