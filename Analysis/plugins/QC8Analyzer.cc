@@ -48,7 +48,6 @@
 //Root
 #include "TH1D.h"
 #include "TH2D.h"
-#include "TProfile.h"
 #include "TString.h"
 #include "TGraphAsymmErrors.h"
 #include "TLorentzVector.h"
@@ -61,11 +60,14 @@ struct QC8Data
 {
   void init();
   TTree* book(TTree *t);//, int branch_type);
-  //branch names and their type will be declared here 
+  //==========Track Info=========
+  float track_chi2;  
 };
 
 void QC8Data::init()
-{//branch default values to be initiated here
+{
+  //==========Track Info=========
+  track_chi2 = 999999;
 }
 
 TTree* QC8Data::book(TTree *t){//, int branch_type){
@@ -79,7 +81,8 @@ TTree* QC8Data::book(TTree *t){//, int branch_type){
   else {std::cout << "branch number not one of the two listed ones" << std::endl;}
   */
 
-  //tree and branches to be listed here
+  //==========Track Info=========
+  t->Branch("track_chi2", &track_chi2);
   return t;
 }
 
@@ -140,7 +143,9 @@ void QC8TrackValidation::analyze(const edm::Event& iEvent, const edm::EventSetup
 
   std::map<GEMDetId, TrajectoryStateOnSurface> tsosMap;
   for (std::vector<reco::Track>::const_iterator track = tracks->begin(); track != tracks->end(); ++track){
-
+    data_.init();
+    data_.track_chi2 = track->normalizedChi2();
+    tree->Fill();
   }
 
 }
