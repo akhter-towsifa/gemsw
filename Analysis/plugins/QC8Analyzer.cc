@@ -60,22 +60,63 @@ struct QC8Data
 {
   void init();
   TTree* book(TTree *t);
+  //==========Muon Info==========
+  int muon_charge;
+  float muon_pt;
   //==========Track Info=========
   float track_chi2;  
+  int CSC_location[5];
+  int CSC_strip;
+  //========RecHit Info=========
+  float rechit_LP[3];
+  float rechit_GP[3];
+  int rechit_CLS;
+  int rechit_detId;
+  int rechit_location[5];
 };
 
 void QC8Data::init()
 {
+  //The variables are initiated at a high value (e.g. 999999) as a default value
+  //==========Muon Info==========
+  muon_charge = 9999;
+  muon_pt = 999999;
   //==========Track Info=========
   track_chi2 = 999999;
+  for (int i=0; i<5; ++i){
+    CSC_location[i] = 999999;
+  }
+  CSC_strip = 999999;
+  //========RecHit Info=========
+  for (int i=0; i<3; ++i){
+    rechit_GP[i] = 999999;
+    rechit_LP[i] = 999999;
+  }
+  rechit_CLS = 999999;
+  rechit_detId = 999999;
+  for (int i=0; i<5; ++i){
+    rechit_location[i] = 999999;
+  }
 }
 
 TTree* QC8Data::book(TTree *t){
   edm::Service< TFileService > fs;
   t = fs->make<TTree>("analyzer", "analyzer");
 
+  //==========Muon Info==========
+  t->Branch("muon_charge", &muon_charge);
+  t->Branch("muon_pt", &muon_pt);
   //==========Track Info=========
   t->Branch("track_chi2", &track_chi2);
+  t->Branch("CSC_location", &CSC_location, "CSC_location[5] (reg, sta, cha, lay, rol)/I");
+  t->Branch("CSC_strip", &CSC_strip);
+  //========RecHit Info=========
+  t->Branch("rechit_LP", &rechit_LP, "rechit_LP[3] (x,y,z)/F");
+  t->Branch("rechit_GP", &rechit_GP, "rechit_GP[3] (x,y,z)/F");
+  t->Branch("rechit_CLS", &rechit_CLS);
+  t->Branch("rechit_detId", &rechit_detId);
+  t->Branch("rechit_location", &rechit_location, "rechit_location[5] (reg, sta, cha, lay, rol)/I");
+
   return t;
 }
 
