@@ -61,8 +61,8 @@ struct QC8Data
   void init();
   TTree* book(TTree *t);
   //==========Muon Info==========
-  int muon_charge;
-  float muon_pt;
+  //int muon_charge;
+  //float muon_pt;
   //==========Track Info=========
   float track_chi2;  
   int CSC_location[5];
@@ -79,8 +79,8 @@ void QC8Data::init()
 {
   //The variables are initiated at a high value (e.g. 999999) as a default value
   //==========Muon Info==========
-  muon_charge = 9999;
-  muon_pt = 999999;
+  //muon_charge = 9999;
+  //muon_pt = 999999;
   //==========Track Info=========
   track_chi2 = 999999;
   for (int i=0; i<5; ++i){
@@ -104,8 +104,8 @@ TTree* QC8Data::book(TTree *t){
   t = fs->make<TTree>("analyzer", "analyzer");
 
   //==========Muon Info==========
-  t->Branch("muon_charge", &muon_charge);
-  t->Branch("muon_pt", &muon_pt);
+  //t->Branch("muon_charge", &muon_charge);
+  //t->Branch("muon_pt", &muon_pt);
   //==========Track Info=========
   t->Branch("track_chi2", &track_chi2);
   t->Branch("CSC_location", &CSC_location, "CSC_location[5] (reg, sta, cha, lay, rol)/I");
@@ -188,6 +188,7 @@ void QC8Analyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
   for (std::vector<reco::Track>::const_iterator track = tracks->begin(); track != tracks->end(); ++track){
     data_.init();
     data_.track_chi2 = track->normalizedChi2();
+
     auto traj = trajs->begin();
     for (auto traj_measurements : traj->measurements()) {
       auto tsos = traj_measurements.predictedState();
@@ -204,15 +205,25 @@ void QC8Analyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
       auto tsos = tsos_Map[etaPartId];
 
       auto track_LP = tsos.localPosition();
+      //auto track_LP_x = tsos.localPosition().x();
 
+      auto reg = etaPartId.region();
+      auto st = etaPartId.station();
       auto ch = etaPartId.chamber();
       auto lay = etaPartId.layer();
       auto iEta = etaPartId.ieta();
+      //int rechit_CLS;
+      //rechit_CLS = hit->clusterSize();
+
+      auto rechit_GP_x = etaPart->toGlobal((hit)->localPosition()).x();
+      auto rechit_LP_x = (hit)->localPosition().x();
+
+      if (debug) std::cout << "rechit x GP:LP " << rechit_GP_x << ":" << rechit_LP_x << endl;
 
       auto strip = int(etaPart->strip(track_LP));
       int module = (16 - iEta)/4 + 1 + (2 - lay)*4;
       int sector = 1 - ((16 - iEta) % 4 / 2);
-      if (debug) std::cout << "GEM chamber:layer:iEta " << ch << ":" << lay << ":" << iEta << std::endl;
+      if (debug) std::cout << "GEM region:station:chamber:layer:iEta " << reg << ":" << st << ":" << ch << ":" << lay << ":" << iEta << std::endl;
       if (debug) std::cout << "strip:module:sector " << strip << ":" << module << ":" << sector <<std::endl;
     }
     
