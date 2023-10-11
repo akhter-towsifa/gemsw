@@ -119,7 +119,7 @@ QC8Analyzer::QC8Analyzer(const edm::ParameterSet& iConfig)
   edm::ParameterSet serviceParameters = iConfig.getParameter<edm::ParameterSet>("ServiceParameters");
   theService_ = new MuonServiceProxy(serviceParameters, consumesCollector());
 
-  tracks_ = consumes<reco::Track(iConfig.getParameter<InputTag>("tracks"));
+  tracks_ = consumes<reco::TrackCollection>(iConfig.getParameter<edm::InputTag>("tracks"));
   trajs_ = consumes<vector<Trajectory>>(iConfig.getParameter<edm::InputTag>("trajs"));
   gemRecHits_ = consumes<GEMRecHitCollection>(iConfig.getParameter<edm::InputTag>("gemRecHitLabel"));
   debug = iConfig.getParameter<bool>("debug");
@@ -179,3 +179,9 @@ void QC8Analyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
   }
 
 }
+
+
+void QC8Analyzer::beginJob(){}
+void QC8Analyzer::endJob(){}
+
+DEFINE_FWK_MODULE(QC8Analyzer);
