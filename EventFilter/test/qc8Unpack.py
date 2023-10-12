@@ -9,8 +9,8 @@ options.parseArguments()
 process = cms.Process("GEMStreamSource")
 
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(options.maxEvents),
-    #input = cms.untracked.int32(10000),
+    #input = cms.untracked.int32(options.maxEvents),
+    input = cms.untracked.int32(-1),
     output = cms.optional.untracked.allowed(cms.int32,cms.PSet)
 )
 
@@ -30,15 +30,21 @@ if debug:
 #else:
 #    process.MessageLogger.cerr.FwkReport.reportEvery = 5000
 
+#inputFiles = ['file:/afs/cern.ch/work/t/toakhter/public/gem904/run_10007_0a.raw.zst', 'file:/afs/cern.ch/work/t/toakhter/public/gem904/run_10007_0b.raw.zst']
+inputFiles = ['file:/eos/user/t/toakhter/QC8/10076/run10076_000412a.raw.zst', 'file:/eos/user/t/toakhter/QC8/10076/run10076_000412b.raw.zst']
+
 process.source = cms.Source("GEMStreamSource",
                             fileNames=cms.untracked.vstring(
-                            options.inputFiles),
+                            #options.inputFiles
+                            inputFiles                            
+                            ),
                             firstLuminosityBlockForEachRun=cms.untracked.VLuminosityBlockID({}))
 #process.source = cms.Source("NewEventStreamFileReader",
 #                            fileNames=cms.untracked.vstring(
 #                            options.inputFiles),)
 
-print(options.inputFiles)
+#print(options.inputFiles)
+print(inputFiles)
 
 # this block ensures that the output collection is named rawDataCollector, not source
 process.rawDataCollector = cms.EDAlias(source=cms.VPSet(
@@ -130,7 +136,7 @@ process.output = cms.OutputModule("PoolOutputModule",
                                       "keep *",
                                       "drop FEDRawDataCollection_*_*_*"
                                   ),
-                                  fileName=cms.untracked.string('output_10007a_step1.root'),
+                                  fileName=cms.untracked.string('output_10076.root'),
                                   splitLevel = cms.untracked.int32(0)
 )
 #
@@ -143,7 +149,7 @@ process.output = cms.OutputModule("PoolOutputModule",
 process.unpack = cms.Path(process.muonGEMDigis)
 process.localreco = cms.Path(process.gemRecHits)
 process.reco_step = cms.Path(process.GEMTrackFinder)
-#process.validation_step = cms.Path(process.TrackValidation)
+process.validation_step = cms.Path(process.TrackValidation)
 #process.dqmout_step = cms.EndPath(process.DQMoutput)
 #process.DQM_step = cms.Path(process.DQMDAQ*process.DQMRecHit)
 #process.dqmout = cms.EndPath(process.dqmEnv + process.dqmSaver)
