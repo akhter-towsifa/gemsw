@@ -15,14 +15,12 @@ process.MessageLogger.cerr.FwkReport.reportEvery = 500
 
 process.maxEvents = cms.untracked.PSet(
     input = cms.untracked.int32(-1)
-#    output = cms.optional.untracked.allowed(cms.int32,cms.PSet)
 )
 
-#inputFiles = 'file:../../EventFilter/test/output_10076.root'
-#print(inputFiles)
-
 process.source = cms.Source("PoolSource", 
-                fileNames = cms.untracked.vstring(options.inputFiles)                )
+                fileNames = cms.untracked.vstring(options.inputFiles),
+                labelRawDataLikeMC = cms.untracked.bool(False)
+)
 
 
 process.options = cms.untracked.PSet(
@@ -32,6 +30,7 @@ process.options = cms.untracked.PSet(
 outfile = "output_qc8analyzer_10076.root"
 process.source.fileNames.append('file:../../EventFilter/test/output_10076.root')
 #process.source.fileNames.append('file:/eos/user/t/toakhter/QC8/output_step1.root')
+
 
 process.TFileService = cms.Service("TFileService", fileName = cms.string(outfile))
 
@@ -53,7 +52,7 @@ process.output = cms.OutputModule("PoolOutputModule",
                                       "keep *",
                                       "drop FEDRawDataCollection_*_*_*"
                                   ),
-                                  fileName=cms.untracked.string('output_10076.root'),
+                                  fileName=cms.untracked.string(outfile),
                                   splitLevel = cms.untracked.int32(0)
 )
 
