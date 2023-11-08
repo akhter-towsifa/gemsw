@@ -34,8 +34,8 @@ cd CMSSW_13_0_9/src
 cmsenv
 git cms-init -q
 git cms-merge-topic yeckang:QC8Unpacker_13_0_X -q
-git clone git@github.com:gem-sw/gemsw.git
-scram b -j10
+git clone git@github.com:akhter-towsifa/gemsw.git -b analyzer
+scram b -j 8
 cd gemsw/EventFilter/test
 cmsRun qc8Unpack.py inputFiles=file:<file path a>,file:<file path b> maxEvents=<number of events to analyze>
 cmsRun qc8_HARVESTING.py
@@ -49,8 +49,8 @@ cd CMSSW_13_0_9/src
 cmsenv
 git cms-init -q
 git cms-merge-topic yeckang:QC8Unpacker_13_0_X -q
-git clone git@github.com:gem-sw/gemsw.git
-scram b -j10
+git clone git@github.com:akhter-towsifa/gemsw.git -b analyzer
+scram b -j 8
 cd gemsw/EventFilter/test
 python3 runQC8Unapck_onDir.py -d <path to the dierectory with data>
 cmsRun qc8_HARVESTING.py
