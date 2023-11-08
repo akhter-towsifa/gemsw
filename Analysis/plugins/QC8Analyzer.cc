@@ -70,9 +70,13 @@ struct QC8Data
   //========RecHit Info=========
   float rechit_LP[3];
   float rechit_GP[3];
+  int rechit_BX;
   int rechit_CLS;
   int rechit_detId;
   int rechit_location[5];
+  //========DiGi Info==========
+  int digi_strip;
+
 };
 
 void QC8Data::init()
@@ -92,11 +96,14 @@ void QC8Data::init()
     rechit_GP[i] = 999999;
     rechit_LP[i] = 999999;
   }
+  rechit_BX = 999999;
   rechit_CLS = 999999;
   rechit_detId = 999999;
   for (int i=0; i<5; ++i){
     rechit_location[i] = 999999;
   }
+  //========Digi Info==========
+  digi_strip = 999999;
 }
 
 TTree* QC8Data::book(TTree *t){
@@ -114,8 +121,11 @@ TTree* QC8Data::book(TTree *t){
   t->Branch("rechit_LP", &rechit_LP, "rechit_LP[3] (x,y,z)/F");
   t->Branch("rechit_GP", &rechit_GP, "rechit_GP[3] (x,y,z)/F");
   t->Branch("rechit_CLS", &rechit_CLS);
+  t->Branch("rechit_BX", &rechit_BX);
   t->Branch("rechit_detId", &rechit_detId);
   t->Branch("rechit_location", &rechit_location, "rechit_location[5] (reg, sta, cha, lay, rol)/I");
+  //========Digi Info==========
+  t->Branch("digi_strip", &digi_strip, "digi_strip/I");
 
   return t;
 }
@@ -137,6 +147,7 @@ private:
   edm::EDGetTokenT<reco::TrackCollection> tracks_;
   edm::EDGetTokenT<vector<Trajectory>> trajs_;
   edm::EDGetTokenT<GEMRecHitCollection> gemRecHits_;
+  edm::EDGetTokenT<GEMDigiCollection> gemDigis_;
   edm::ESHandle<GEMGeometry> GEMGeometry_;
   const edm::ESGetToken<GEMGeometry, MuonGeometryRecord> GEMGeom_;
   const edm::ESGetToken<GEMGeometry, MuonGeometryRecord> GEMGeomBeginRun_;
@@ -161,6 +172,7 @@ QC8Analyzer::QC8Analyzer(const edm::ParameterSet& iConfig)
   tracks_ = consumes<reco::TrackCollection>(iConfig.getParameter<edm::InputTag>("tracks"));
   trajs_ = consumes<vector<Trajectory>>(iConfig.getParameter<edm::InputTag>("trajs"));
   gemRecHits_ = consumes<GEMRecHitCollection>(iConfig.getParameter<edm::InputTag>("gemRecHitLabel"));
+  gemDigis_ = consumes<GEMDigiCollection>(iConfig.getParameter<edm::InputTag>("gemDigiLabel"));
   debug = iConfig.getParameter<bool>("debug");
 
   analyzer_tree = data_.book(analyzer_tree);
@@ -182,18 +194,8 @@ void QC8Analyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
   edm::Handle<GEMRecHitCollection> gemRecHits;
   iEvent.getByToken(gemRecHits_, gemRecHits);
 
-
-  /*
-  for (auto etaPart : GEMGeometry_->etaPartitions()) {
-    auto gId = etaPart->id();
-    auto rechitRange = gemRecHits->get(gId);
-    for (auto rechit = rechitRange.first; rechit != rechitRange.second; ++rechit) {
-      auto cls_size = rechit->clusterSize();
-      std::cout << "cls = " << cls_size << std::endl;
-    }
-  }
-  */
-  //if (debug) cout << "tracks:trajs:gemRecHits " << tracks->size() << ":" << trajs->size() << ":" << gemRecHits->size() << endl;
+  edm::Handle<GEMDigiCollection> gemDigis;
+  iEvent.getByToken(gemDigis_, gemDigis);
 
   theService_->update(iSetup);  
 
@@ -203,9 +205,16 @@ void QC8Analyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
 
   std::map<GEMDetId, TrajectoryStateOnSurface> tsos_Map;
 
+  for (std::vector<reco::Track>::const_iterator track = tracks->begin(); track != tracks->end(); track++){
+    data_.track_chi2 = track->normalizedChi2();
+  }
+
   for (auto etaPart: GEMGeometry_->etaPartitions()){
     auto gemId = etaPart->id();
     auto rechit = gemRecHits->get(gemId);
+    //auto iter_first = rechit.first; auto iter_second = rechit.second;
+    //std::cout << "first:second" << int iter_first->clusterSize() << ":" << int iter_second->clusterSize << std::endl;
+
     for (auto hit = rechit.first; hit != rechit.second; hit++){
       //auto etaPartgeoId = hit->geographicalId();
       //auto etaPartId = etaPartgeoId->id();
@@ -221,19 +230,23 @@ void QC8Analyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
       auto lay = gemId.layer();
       auto iEta = gemId.ieta();
       auto rechit_CLS = hit->clusterSize();
+      auto rechit_BX = hit->BunchX();
 
-      //auto rechit_GP_x = etaPartgeoId->toGlobal((hit)->localPosition()).x();
+      auto rechit_GP = etaPart->surface().toGlobal(hit->localPosition());
+      auto rechit_GP_x = rechit_GP.x();
+      auto rechit_GP_y = rechit_GP.y();
       //auto rechit_LP_x = (hit)->localPosition().x();
 
-      //if (debug) std::cout << "rechit x GP:LP " << rechit_GP_x << ":" << rechit_LP_x << endl;
+      if (debug) std::cout << "rechit GP x:y " << rechit_GP_x << ":" << rechit_GP_y << endl;
 
-      //auto strip = int(etaPart_geoId->strip(track_LP));
+      auto strip = etaPart->strip(hit->localPosition());
       int module = (16 - iEta)/4 + 1 + (2 - lay)*4;
       int sector = 1 - ((16 - iEta) % 4 / 2);
-      if (debug) std::cout << "GEM region:station:chamber:layer:iEta " << reg << ":" << st << ":" << ch << ":" << lay << ":" << iEta << std::endl;
-      //if (debug) std::cout << "strip:module:sector " << strip << ":" << module << ":" << sector <<std::endl;
+      if (debug) std::cout << "GEM region:station:chamber:layer:iEta BX " << reg << ":" << st << ":" << ch << ":" << lay << ":" << iEta << " " << rechit_BX << std::endl;
+      if (debug) std::cout << "strip:module:sector " << strip << ":" << module << ":" << sector <<std::endl;
 
-      //data_.rechit_GP[0] = rechit_GP_x;
+      data_.rechit_GP[0] = rechit_GP_x;
+      data_.rechit_GP[1] = rechit_GP_y;
       //data_.rechit_LP[0] = rechit_LP_x;
       data_.rechit_location[0] = reg;
       data_.rechit_location[1] = st;
@@ -241,8 +254,17 @@ void QC8Analyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
       data_.rechit_location[3] = lay;
       data_.rechit_location[4] = iEta;
       data_.rechit_CLS = rechit_CLS;
+      data_.rechit_BX = rechit_BX;
       //data_.rechit_detId = etaPartId;
     }
+
+    auto digiRange = gemDigis->get(gemId);
+    for  (auto digi = digiRange.first; digi != digiRange.second; digi++){
+      auto strip = digi->strip();
+      data_.digi_strip = strip;
+      if (debug) cout << "digi strip: ieta " << strip << ":" << gemId.ieta() << endl;
+    }
+
   }
 
   /*

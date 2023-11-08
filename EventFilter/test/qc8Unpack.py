@@ -30,8 +30,7 @@ if debug:
 #else:
 #    process.MessageLogger.cerr.FwkReport.reportEvery = 5000
 
-#inputFiles = ['file:/afs/cern.ch/work/t/toakhter/public/gem904/run_10007_0a.raw.zst', 'file:/afs/cern.ch/work/t/toakhter/public/gem904/run_10007_0b.raw.zst']
-inputFiles = ['file:/eos/user/t/toakhter/QC8/10086/run10086_000017a.raw.zst', 'file:/eos/user/t/toakhter/QC8/10086/run10086_000017b.raw.zst']
+inputFiles = ['file:/afs/cern.ch/work/t/toakhter/public/gem904/10090/00010090/run10090a-index000652.raw.zst', 'file:/afs/cern.ch/work/t/toakhter/public/gem904/10090/00010090/run10090b-index000652.raw.zst']
 
 process.source = cms.Source("GEMStreamSource",
                             fileNames=cms.untracked.vstring(
@@ -91,7 +90,7 @@ process.GEMTrackFinder = cms.EDProducer("GEMTrackFinderQC8",
                                         trackChi2 = cms.double(1.2),
                                         direction = cms.vdouble(0,0,1),
                                         topSeedingChamber = cms.int32(7),
-                                        botSeedingChamber = cms.int32(2),
+                                        botSeedingChamber = cms.int32(3),
                                         useModuleColumns = cms.bool(True),
                                         doFit = cms.bool(True),
                                         MuonSmootherParameters = cms.PSet(
@@ -136,7 +135,7 @@ process.output = cms.OutputModule("PoolOutputModule",
                                       "keep *",
                                       "drop FEDRawDataCollection_*_*_*"
                                   ),
-                                  fileName=cms.untracked.string('output_unpacker_10086.root'),
+                                  fileName=cms.untracked.string('output_unpacker_10090.root'),
                                   splitLevel = cms.untracked.int32(0)
 )
 #

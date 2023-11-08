@@ -71,6 +71,7 @@ void GEMTrackFinderQC8::setSeedingLayers() {
 }
 
 void GEMTrackFinderQC8::makeTrajectorySeeds(const GEMRecHitCollection* gemRecHits) {
+  std::cout << "GEMTrackFinderQC8:makeTrajectorySeeds:gemRecHits size " << gemRecHits->size() << endl;
   for (int col = 0; col < nColumns_; col++) {
     for (int itop = 0; itop < 16/nColumns_; itop++) {
       int idxTop = 4 * col + itop;

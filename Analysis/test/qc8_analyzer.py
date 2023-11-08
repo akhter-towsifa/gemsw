@@ -49,8 +49,8 @@ process.options = cms.untracked.PSet(
                         SkipEvent = cms.untracked.vstring('ProductNotFound')
                         )
 
-outfile = "output_qc8analyzer_10086.root"
-process.source.fileNames.append('file:../../EventFilter/test/output_unpacker_10086.root')
+outfile = "output_qc8analyzer_10100.root"
+process.source.fileNames.append('file:../../EventFilter/test/output_unpacker_10100.root')
 #process.source.fileNames.append('file:/eos/user/t/toakhter/QC8/output_step1.root')
 
 
@@ -60,6 +60,7 @@ process.TFileService = cms.Service("TFileService", fileName = cms.string(outfile
 process.QC8Analyzer = cms.EDAnalyzer("QC8Analyzer",
                                      process.MuonServiceProxy,
                                      gemRecHitLabel = cms.InputTag("gemRecHits"),
+                                     gemDigiLabel = cms.InputTag("muonGEMDigis"),
                                      tracks = cms.InputTag("GEMTrackFinder"),
                                      trajs = cms.InputTag("GEMTrackFinder"),
                                      debug = cms.bool(True)

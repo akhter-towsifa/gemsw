@@ -64,6 +64,7 @@ void GEMTrackFinder::produce(edm::Event& ev, const edm::EventSetup& setup) {
   edm::Handle<GEMRecHitCollection> gemRecHits;
   ev.getByToken(theGEMRecHitToken_,gemRecHits);
 
+  std::cout << "gemRecHits size (before): " << gemRecHits->size() << std::endl;
   if (gemRecHits->size() <3){
     ev.put(move(trajectorySeeds));
     ev.put(move(trackCollection));
@@ -72,7 +73,7 @@ void GEMTrackFinder::produce(edm::Event& ev, const edm::EventSetup& setup) {
     ev.put(move(trajectorys));
     return;
   }
-
+  std::cout << "gemRecHits size (after): " << gemRecHits->size() << std::endl;
   trajectorySeedCands_.clear();
   makeTrajectorySeeds(gemRecHits.product());
 
@@ -80,11 +81,14 @@ void GEMTrackFinder::produce(edm::Event& ev, const edm::EventSetup& setup) {
   Trajectory bestTrajectory;
   TrajectorySeed bestSeed;
   float maxChi2 = trackChi2_;
+  if (bestTrajectory.isValid()) {std::cout << "valid best Trajectory" << std::endl;}
+  else {std::cout << "trajectory invalid" << std::endl;}
   for (auto seed : trajectorySeedCands_){
     Trajectory smoothed = makeTrajectory(seed, gemRecHits.product());
     if (smoothed.isValid()){
       if (maxChi2 > smoothed.chiSquared()/float(smoothed.ndof())){
         maxChi2 = smoothed.chiSquared()/float(smoothed.ndof());
+	std::cout << "maxChi2 = smoothed.chiSquared()/float(smoothed.ndof()): " << maxChi2 << std::endl;
         bestTrajectory = smoothed;
         bestSeed = seed;
       }
